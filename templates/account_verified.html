@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{% if user.is_verified %}
+
+<h1>Hello Verified</h1>
+
+<h2> Your account has been verified </h2>
+
+{% else %}
+<h2> You are not verified </h2>
+{% endif %}
+
+{% endblock %}
+

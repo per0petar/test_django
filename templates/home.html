@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Hello Home Page</h1>
+
+
+<div class="col-3">
+    <div class="list-group" id="list-tab" role="tablist">
+        {% if user.is_admin %}
+        <a class="list-group-item list-group-item-action" id="list-home-list" data-toggle="list" href="/admin"
+            role="tab" aria-controls="home">Admin Site</a>
+        {% endif %}
+        <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list"
+            href="{% url 'posts:view_posts' %}" role="tab" aria-controls="profile">View Posts</a>
+        {% if user.is_authenticated %}
+        <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list"
+            href="{% url 'pages:profile' user.id %}">Profile Home Page</a>
+        {% endif %}
+    </div>
+
+    <form method="GET" role="search" action="{% url 'home' %}">
+        <div class="card-body row no-gutters align-items-center">
+            <div class="col-auto">
+            </div>
+            <div class="col">
+                <input class="form-control form-control-lg form-control-borderless" name="user" type="search"
+                    value="{{ request.GET.user }}" placeholder="Search users by name">
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-lg btn-success" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+
+    {% if users %}
+    <h2>Search Results:</h2>
+    <div class="row col-3">
+        <div class="btn-group-vertical" style="margin: auto; width: 150px">
+            {% for user in users %}
+            <a href="{% url 'music:my_library' user.id %}" style="margin: auto; width: 150px;">
+                <button type="submit" class="btn btn-secondary">{{ user.full_name }}</button>
+            </a>
+            &nbsp;
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

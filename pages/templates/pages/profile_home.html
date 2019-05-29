@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div class="col-3" style="margin: auto">
+    <h1> Welcome {{ profile.full_name }} </h1>
+    <div class="list-group" id="list-tab" role="tablist">
+        <a class="list-group-item list-group-item-action" id="list-home-list" data-toggle="list"
+            href="{% url 'pages:update_profile' %}" role="tab" aria-controls="home">Profile Settings</a>
+        <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list"
+            href="{% url 'music:my_library' user.id %}" role="tab" aria-controls="profile">My Library</a>
+    </div>
+
+    <form method="GET" role="search" action="{% url 'pages:profile' user.id %}">
+        <div class="card-body row no-gutters align-items-center">
+            <div class="col-auto">
+            </div>
+            <div class="col">
+                <input class="form-control form-control-lg form-control-borderless" name="user" type="search"
+                    value="{{ request.GET.user }}" placeholder="Search users by name">
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-lg btn-success" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        <h2>Users:</h2>
+        <div class = "btn-group-vertical" style="margin: auto; width: 150px" >
+        {% for user in users %}
+           <a href="{% url 'music:my_library' user.id %}" style="margin: auto; width: 150px;"><button type="submit" class="btn btn-secondary">{{ user.full_name }}</button></a>
+        &nbsp;
+        {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

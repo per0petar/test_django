@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="col-4" style="margin: auto; padding-top: 60px;">
+<h1>You have been logout</h1>
+        <div class="col-4" style="margin: auto">
+            <a href="{% url 'login' %}"><button class="btn btn-outline-success my-2 my-sm-0">Login again</button></a>
+        </div>
+</div>
+{% endblock %}

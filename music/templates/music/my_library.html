@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<h1 style="text-align: center"> {{ pro.full_name }} Music library </h1>
+{% if not filter_by %}
+{% else %}
+<h2 style="text-align: center"> Filter: {{ filter_by }}</h2>
+{% endif %}
+
+<h2> {{ pro.id }} </h2>
+
+<div class="row" style="margin-top: 100px">
+    <div class="col-3">
+        <form method="GET" role="search" action="{% url 'music:my_library' pro.id %}">
+            <div class="card-body row no-gutters align-items-center">
+                <div class="col-auto">
+                </div>
+                <div class="col">
+                    <input class="form-control form-control-lg form-control-borderless" name="search" type="search"
+                        value="{{ request.GET.search }}" placeholder="Search by name">
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-lg btn-success" type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+
+
+
+        <h2>Filter by</h2>
+        <div class="list-group" id="list-tab" role="tablist">
+            <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list"
+                href="{% url 'music:my_library' pro.id %}" role="tab" aria-controls="profile">All albums</a>
+        </div>
+
+        <!-- Accordion example -->
+
+
+        <button class="accordion">Genre</button>
+        <div class=" panel list-group-item list-group-item-action">
+            <!-- filter genre -->
+
+            {% for genre in q_genre %}
+            <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list"
+                href="{% url 'music:my_library' pro.id  genre %}" role="tab" aria-controls="profile">{{ genre }}</a>
+            {% endfor %}
+
+        </div>
+
+        <button class="accordion">Artist</button>
+        <div class=" panel list-group-item list-group-item-action">
+            <!-- filter artist -->
+
+            {% for artist in q_artist %}
+            <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list"
+                href="{% url 'music:my_library' pro.id  artist %}" role="tab" aria-controls="profile">{{ artist }}</a>
+            {% endfor %}
+        </div>
+
+        {% if editable %}
+        <a href="{% url 'music:upload_album' %}"><button type="submit" class="btn btn-primary" value='Save'>Add
+                Album &nbsp;<i class="fas fa-plus"></i></button></a>
+        {% endif %}
+    </div>
+    {% if albums %}
+
+    <div class="col-9">
+
+        <ul class="collection">
+            {% for album in albums %}
+
+            <div style="width: 250px; height: 250px; display: inline-block; padding-bottom: 5px;">
+                <a href="{% url 'music:album_detail' pro.id album.id %}">
+                    <img style="width: 100%; height: 100%" src="{{ album.album_logo.url }}" class="img-responsive">
+                </a>
+                {% if album.is_favorite %}
+                <form action="{% url 'music:favorite_album' pro.id album.id %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="album_id" value="{{ album.id }}" />
+                    <button style="border: none; background: none;"><i class="fas fa-star"></i>
+                    </button>
+                    <span></span>&nbsp;
+                </form>
+                {% else %}
+                <form action="{% url 'music:favorite_album' pro.id album.id %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="album_id" value="{{ album.id }}" />
+                    <button style="border: none; background: none;"><i class="far fa-star"></i>
+                    </button>
+                    <span></span>&nbsp;
+                </form>
+                {% endif %}
+                {% if editable %}
+                <form action="{% url 'music:delete_album' album.id %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="album_id" value="{{ album.id }}" />
+                    <button type="submit" class="btn btn-danger btn-xs">
+                        <span></span>&nbsp; Delete
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </ul>
+
+    </div>
+    {% endif %}
+
+    {% if songs %}
+    <div class="col-9" style="float:left">
+        {% for song in songs %}
+        <div class="col-15">
+            <td>Album title: {{ song.album.album_title }} Artist: {{ song.album.artist }}</td>
+
+        </div>
+        <tr>
+        <tr>{{ song.song_title }}</tr>
+        <div style="float:right">
+            <td>
+                {% if song.is_favorite %}
+                <form action="{% url 'music:favorite_song' pro.id song.id %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="song_id" value="{{ song.id }}" />
+                    <button style="border: none; background: none;"><i class="fas fa-star"></i>
+                    </button>
+                    <span></span>&nbsp;
+                    {% else %}
+                    <form action="{% url 'music:favorite_song' pro.id song.id %}" method="POST"
+                        style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="song_id" value="{{ song.id }}" />
+                        <button style="border: none; background: none;"><i class="far fa-star"></i>
+                        </button>
+                        <span></span>&nbsp;
+                    </form>
+                    {% endif %}
+                    <a target="_blank" href="{{ song.audio_file.url }}">
+                        <button type="button" class="btn btn-success btn-xs">
+                            Play&nbsp;
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </a>
+            </td>
+        </div>
+        <hr>
+        <tr>
+            {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+
+<!-- accordion script -->
+
+<script>
+    var acc = document.getElementsByClassName("accordion");
+    var i;
+
+    for (i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function () {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            }
+        });
+    }
+</script>
+
+{% endblock %}

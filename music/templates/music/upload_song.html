@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<a href="#">Profile</a>
+<a href="#">My Library</a>
+<a href="#">Upload</a>
+
+
+<div style="width:600px; height: 400px; margin: auto; padding-top: 60px;">
+    <h1>Upload song</h1>
+    {% if error_message %}
+        <p><strong>{{ error_message }}</strong></p>
+    {% endif %}
+<form action='.' method='POST' enctype='multipart/form-data'> {% csrf_token %}
+    {{ form.song_title|as_crispy_field }}
+    <!-- <label class="btn btn-outline-secondary btn-lg">
+        {{ form.audio_file|as_crispy_field }}
+    </label> -->
+        {{ form.audio_file|as_crispy_field }}
+   
+
+    <h4>Input Groups</h4>
+    <div class="input-group">
+        <label class="input-group-btn">
+            <span class="btn btn-primary">
+              
+            </span>
+        </label>
+        <input type="text" class="form-control" readonly>
+    </div>
+
+ 
+    <div style= "margin: auto">
+        <button type="submit" class="btn btn-primary">Save &nbsp;<i class="fas fa-save"></i></button>
+    </div>
+</form>
+</div>
+
+{% endblock %}

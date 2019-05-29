@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Hello from Posts</h1>
+{% if user.is_authenticated %}
+    <a href="{% url 'posts:create_post' %}">Create Post</a>
+{% endif %}
+<ul class="collection">
+    {% for post in posts %}
+    <li><a href="{% url 'posts:detail_view' post.id %}">{{ post.post_title }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

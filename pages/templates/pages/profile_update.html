@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+
+<div style="width:600px; height: 400px; margin: auto; padding-top: 60px;">
+    <form method='POST' action="{% url 'pages:profile' user.id %}" enctype='multipart/form-data'>{% csrf_token %}
+        <div class="fieldWrapper">
+            {{ form|crispy }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+
+</div>
+{% endblock %}
