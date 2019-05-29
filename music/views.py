@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
+import copy
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
@@ -25,28 +26,6 @@ IMAGE_FILE_TYPES = ['png', 'jpg', 'jpeg']
 
 # Create your views here.
 
-# class lib_view(View):
-#     template_name = 'music/my_library.html'
-#     q_genre = set(Album.objects.filter(user=request.user.id).values_list('genre', flat=True))
-#     q_artist = set(Album.objects.filter(user=request.user.id).values_list('artist', flat=True))
-
-#     def filters(request, filterby):   
-
-#         print (q_artist)
-#         if filterby in q_genre:
-#             albums = Album.objects.filter(user=request.user, genre=filterby)
-#         else:
-#             albums = Album.objects.filter(user=request.user, artist=filterby)
-
-#         context = {
-#             'albums'    :albums,
-#             'q_genre'   :q_genre,
-#             'q_artist'  :q_artist,
-#             'filter_by' :filterby
-
-#         }
-#         return render(request, 'music/my_library.html', context)
-
 
 def user_tracker(request, user_id):
     profile = get_object_or_404(User, id=user_id)
@@ -68,8 +47,8 @@ def user_tracker(request, user_id):
     return data
 
 def filters(user_id, filter_by):
-    q_genre = set(Album.objects.filter(user=user_id).values_list('genre', flat=True))
-    q_artist = set(Album.objects.filter(user=user_id).values_list('artist', flat=True))
+    q_genre = set(Album.objects.filter(users=user_id).values_list('genre', flat=True))
+    q_artist = set(Album.objects.filter(users=user_id).values_list('artist', flat=True))
 
     
     if filter_by in q_genre:
@@ -89,15 +68,15 @@ def filters(user_id, filter_by):
 
 
 def library_view(request, user_id, filter_by = None):
-    q_genre = set(Album.objects.filter(user=user_id).values_list('genre', flat=True))
-    q_artist = set(Album.objects.filter(user=user_id).values_list('artist', flat=True))
+    q_genre = set(Album.objects.filter(users=user_id).values_list('genre', flat=True))
+    q_artist = set(Album.objects.filter(users=user_id).values_list('artist', flat=True))
     songs = None
     context_user = user_tracker(request, user_id)
 
     if filter_by:
         context_data = filters(user_id, filter_by)
     else:
-        albums = Album.objects.filter(user=user_id)
+        albums = Album.objects.filter(users=user_id)
     
     query = request.GET.get("search")
     if query:
@@ -108,7 +87,7 @@ def library_view(request, user_id, filter_by = None):
             Q(artist__icontains=query)
         ).distinct()
         songs = Song.objects.all()
-        songs = songs.filter(album__user=user_id)
+        songs = songs.filter(album__users=user_id)
         songs = songs.filter(
             Q(song_title__icontains=query)
             ).distinct()
@@ -166,15 +145,16 @@ def library_view(request, user_id, filter_by = None):
 
 
 
-
+@login_required
 def upload_album_view(request):
     if not request.user.is_authenticated():
         return render(request, 'login.html')
     else:
         form = AlbumForm(request.POST or None, request.FILES or None)
         if form.is_valid():
-            album = form.save(commit=False)
-            album.user = request.user
+            album = form.save()
+            user = User.objects.get(pk=request.user.id)
+            album.users.add(user)
             album.album_logo = request.FILES['album_logo']
             file_type = album.album_logo.url.split('.')[-1]
             file_type = file_type.lower()
@@ -193,6 +173,7 @@ def upload_album_view(request):
         }
     return render(request, 'music/upload_album.html', context)
 
+@login_required
 def upload_song_view(request, album_id):
     form = SongForm(request.POST or None, request.FILES or None)
     album = get_object_or_404(Album, pk=album_id)
@@ -237,20 +218,44 @@ def album_detail_view(request, user_id, album_id):
 
     return render(request, 'music/album_detail.html', context)
 
+@login_required
+def add_to_library(request, album_id):
 
+    profile = get_object_or_404(User, id=request.user.id)
+
+    album = Album.objects.get(pk=album_id)
+ 
+    album_copy = copy.deepcopy(album)
+    album_copy.save()
+    print('----', album_copy.id)
+    album_copy.id = None
+    print('ddd', album_copy.id)
+    profile.user.add(album_copy)
+
+    
+    # album_copy.user.add(user)
+
+    # print('****', album.users.all())
+    # print('----', album_copy.users.all())
+
+    # album_copy.save()
+    return render(request, 'music/my_library.html', {'pro': profile })
+
+@login_required
 def delete_album(request, album_id):
     album = Album.objects.get(pk=album_id)
     album.delete()
-    albums = Album.objects.filter(user=request.user)    
+    albums = Album.objects.filter(users=request.user)    
     return render(request, 'music/my_library.html', {'albums': albums})
 
-
+@login_required
 def delete_song(request, album_id, song_id):
     album = get_object_or_404(Album, pk=album_id)
     song = Song.objects.get(pk=song_id)
     song.delete()
     return render(request, 'music/album_detail.html', {'album': album})
 
+@login_required
 def favorite_song(request, album_id, song_id):
     album = get_object_or_404(Album, pk=album_id)
     song = get_object_or_404(Song, pk=song_id)
@@ -265,9 +270,10 @@ def favorite_song(request, album_id, song_id):
     else:
         return render(request, 'music/album_detail.html', {'album': album})
 
+@login_required
 def favorite_album(request, user_id, album_id):
     
-    albums = Album.objects.filter(user=request.user)
+    albums = Album.objects.filter(users=request.user)
 
     context_user = user_tracker(request, user_id)
     context_data = {'albums': albums}

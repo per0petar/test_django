@@ -102,6 +102,13 @@
                     </button>
                 </form>
                 {% endif %}
+                {% if not editable %}
+                <a href="{% url 'music:add_to_library' album.id %}">
+                    <button type="button" class="btn btn-success btn-xs"><i class="fas fa-download"></i>
+                        Add to my library &nbsp;
+                    </button>
+                </a>
+                {% endif %}
             </div>
             {% endfor %}
         </ul>
