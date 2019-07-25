@@ -39,29 +39,32 @@ def user_tracker(request, user_id):
     # Handling non authenticated user for obvious reasons
     if request.user.is_authenticated() and request.user == user:
         editable = True
+
+    owned = set(Album.objects.filter(users=request.user).values_list('users', flat=True))  
     
     data = {
         'editable': editable,
-        'pro': profile
+        'profile': profile,
+        'owned' : owned
     }
     return data
+
 
 def filters(user_id, filter_by):
     q_genre = set(Album.objects.filter(users=user_id).values_list('genre', flat=True))
     q_artist = set(Album.objects.filter(users=user_id).values_list('artist', flat=True))
-
     
     if filter_by in q_genre:
-        albums = Album.objects.filter(user=user_id, genre=filter_by)
+        albums = Album.objects.filter(users=user_id, genre=filter_by)
     elif filter_by in q_artist:
-        albums = Album.objects.filter(user=user_id, artist=filter_by)
+        albums = Album.objects.filter(users=user_id, artist=filter_by)
     else:
-        albums = Album.objects.filter(user=user_id)
+        albums = Album.objects.filter(users=user_id)
 
     data = {
-        'albums'   : albums,   
+        'albums': albums,
         'q_genre': q_genre,
-        'q_artist': q_artist
+        'q_artist': q_artist,
     }
           
     return data
@@ -77,6 +80,11 @@ def library_view(request, user_id, filter_by = None):
         context_data = filters(user_id, filter_by)
     else:
         albums = Album.objects.filter(users=user_id)
+        context_data = {
+            'albums': albums,
+            'q_genre': q_genre,
+            'q_artist': q_artist
+        }
     
     query = request.GET.get("search")
     if query:
@@ -100,11 +108,6 @@ def library_view(request, user_id, filter_by = None):
         context = {**context_user, **context_data}
         return render(request, "music/my_library.html", context, {'filter_by': filter_by})
     else:
-        context_data = {
-            'albums': albums,
-            'q_genre': q_genre,
-            'q_artist': q_artist
-            }
         context = {**context_user, **context_data}
         return render(request, "music/my_library.html", context, {'filter_by': filter_by})
 
@@ -224,29 +227,47 @@ def add_to_library(request, album_id):
     profile = get_object_or_404(User, id=request.user.id)
 
     album = Album.objects.get(pk=album_id)
- 
-    album_copy = copy.deepcopy(album)
-    album_copy.save()
-    print('----', album_copy.id)
-    album_copy.id = None
-    print('ddd', album_copy.id)
-    profile.user.add(album_copy)
+    albumsongs = album.song_set.all()
 
+    print ('--------',album.artist)
     
-    # album_copy.user.add(user)
+    album_copy = Album()
+    album_copy = copy.deepcopy(album)
+    album_copy.users.add(profile)
+    # 
+    # album_copy.song.add(album_songs)
 
-    # print('****', album.users.all())
-    # print('----', album_copy.users.all())
+    # print ('dddddddd',album_copy.song_set.all())
+    # album_copy
 
-    # album_copy.save()
-    return render(request, 'music/my_library.html', {'pro': profile })
+    # album_copy.albums.add(album_copy)
+    # profile.album
+    print ('#####',type(album_copy))
+
+    # print ("#########",album_copy.users.all())
+
+    # album_copy.users = None
+
+    # print ('@@@@@@@@@@',album_copy.user)
+
+    album_copy.save()
+
+    return render(request, 'music/my_library.html', {'profile': profile })
 
 @login_required
 def delete_album(request, album_id):
     album = Album.objects.get(pk=album_id)
-    album.delete()
-    albums = Album.objects.filter(users=request.user)    
-    return render(request, 'music/my_library.html', {'albums': albums})
+
+    print(request.user)
+
+    if len(album.users.all()) > 1:
+        album.users.remove(request.user)
+    else:
+        album.delete()
+    albums = Album.objects.filter(users=request.user)
+    context_user = user_tracker(request, request.user.id)
+    return render(request, 'music/my_library.html', context_user, {'albums': albums})
+    
 
 @login_required
 def delete_song(request, album_id, song_id):

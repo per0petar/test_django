@@ -38,7 +38,7 @@ def verify(request, uuid):
 def profile_view(request, user_id):
     profile = get_object_or_404(User, id=user_id)
     query = request.GET.get('user')
-    users = User.objects.all()[:1] # Gets all users but limits the number shown with use of square brackets [] 
+    users = User.objects.all() #[:1]  Gets all users but limits the number shown with use of square brackets [] 
 
     if query:
         users = User.objects.filter(full_name__icontains=query)
