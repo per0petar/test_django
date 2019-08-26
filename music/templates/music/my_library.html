@@ -55,7 +55,8 @@
 
             {% for artist in q_artist %}
             <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list"
-                href="{% url 'music:my_library' profile.id  artist %}" role="tab" aria-controls="profile">{{ artist }}</a>
+                href="{% url 'music:my_library' profile.id  artist %}" role="tab"
+                aria-controls="profile">{{ artist }}</a>
             {% endfor %}
         </div>
 
@@ -76,7 +77,8 @@
                     <img style="width: 100%; height: 100%" src="{{ album.album_logo.url }}" class="img-responsive">
                 </a>
                 {% if album.is_favorite %}
-                <form action="{% url 'music:favorite_album' profile.id album.id %}" method="POST" style="display: inline;">
+                <form action="{% url 'music:favorite_album' profile.id album.id %}" method="POST"
+                    style="display: inline;">
                     {% csrf_token %}
                     <input type="hidden" name="album_id" value="{{ album.id }}" />
                     <button style="border: none; background: none;"><i class="fas fa-star"></i>
@@ -84,7 +86,8 @@
                     <span></span>&nbsp;
                 </form>
                 {% else %}
-                <form action="{% url 'music:favorite_album' profile.id album.id %}" method="POST" style="display: inline;">
+                <form action="{% url 'music:favorite_album' profile.id album.id %}" method="POST"
+                    style="display: inline;">
                     {% csrf_token %}
                     <input type="hidden" name="album_id" value="{{ album.id }}" />
                     <button style="border: none; background: none;"><i class="far fa-star"></i>
@@ -103,18 +106,18 @@
                 </form>
                 {% endif %}
                 {% if not editable %}
-                    {% for i in album.users.all %}
-                        {% if i.id == request.user.id %}
-                        <a href="{% url 'music:add_to_library' album.id %}">
-                            <button type="button" class="btn btn-success btn-xs"><i class="fas fa-download"></i>
-                                Owned &nbsp;
-                            </button>
-                        </a>
-                        {{ break }}
-                        {% endif %}
-                    {% endfor %}
-                    
-                    
+                {% for i in album.users.all %}
+                {% if i.id == request.user.id %}
+                <a href="{% url 'music:add_to_library' album.id %}">
+                    <button type="button" class="btn btn-success btn-xs"><i class="fas fa-download"></i>
+                        Owned &nbsp;
+                    </button>
+                </a>
+                {{ break }}
+                {% endif %}
+                {% endfor %}
+
+
                 {% endif %}
             </div>
             {% endfor %}
@@ -135,7 +138,8 @@
         <div style="float:right">
             <td>
                 {% if song.is_favorite %}
-                <form action="{% url 'music:favorite_song' profile.id song.id %}" method="POST" style="display: inline;">
+                <form action="{% url 'music:favorite_song' profile.id song.id %}" method="POST"
+                    style="display: inline;">
                     {% csrf_token %}
                     <input type="hidden" name="song_id" value="{{ song.id }}" />
                     <button style="border: none; background: none;"><i class="fas fa-star"></i>

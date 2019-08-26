@@ -62,12 +62,7 @@ def update_view(request):
         u_form = UpdateUserFrom(request.POST,instance=request.user)
         if u_form.is_valid():
             u_form.save()
-            username = u_form.cleaned_data.get("username")
-            password = u_form.cleaned_data.get("password")
-            user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return render(request, "pages/profile_home.html", context)
+            return redirect("pages:profile", request.user.id)
     else:
         u_form = UpdateUserFrom(instance=request.user)
     return render(request, "pages/profile_update.html", context)

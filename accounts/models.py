@@ -12,7 +12,7 @@ from .tasks import send_verification_email
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, email, full_name=None, password=None, is_active=True, is_staff=False, is_admin=False, iss_verified=False):
+    def create_user(self, email, full_name=None, password=None, is_active=True, is_staff=False, is_admin=False, is_verified=False):
         if not email:
             raise ValueError("Users must have an email address")
         if not password:
@@ -26,7 +26,7 @@ class UserManager(BaseUserManager):
         user.active = is_active
         user.staff = is_staff
         user.admin = is_admin
-        user.is_verified = iss_verified    
+        user.verified = is_verified    
         user.save(using=self._db)
         return user
     
@@ -46,7 +46,7 @@ class UserManager(BaseUserManager):
             password=password,
             is_staff=True,
             is_admin=True,
-            iss_verified=True
+            is_verified=True
             
         )
         return user
@@ -58,7 +58,7 @@ class User(AbstractBaseUser):
     staff       = models.BooleanField(default=False) #staff user non superuser
     admin       = models.BooleanField(default=False) #superuser
     created_at  = models.DateTimeField(auto_now_add=True)
-    is_verified = models.BooleanField('verified', default=False) # Add the `is_verified` flag
+    verified = models.BooleanField('is_verified', default=False) # 'is_verified` flag
     verification_uuid = models.UUIDField('Unique Verification UUID', default=uuid.uuid4) #verification code
 
     
@@ -98,8 +98,8 @@ class User(AbstractBaseUser):
         return self.active
     
     @property
-    def iss_verified(self):
-        return self.is_verified
+    def is_verified(self):
+        return self.verified
 
 def user_post_save(sender, instance, signal, *args, **kwargs):
     if not instance.is_verified:
